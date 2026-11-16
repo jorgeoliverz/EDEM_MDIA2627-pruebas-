@@ -1,0 +1,8 @@
+services:
+  renfe-colector:
+    build: .
+    container_name: renfe-colector
+    environment:
+      UMBRAL_KM: 10
+      INTERVALO_S: 20
+      PYTHONUNBUFFERED: 1

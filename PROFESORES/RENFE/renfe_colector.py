@@ -1,9 +1,12 @@
+import os
+import time
 import requests
 from datetime import datetime
 from math import radians, sin, cos, asin, sqrt
 
 URL = "https://tiempo-real.largorecorrido.renfe.com/renfe-visor/flotaLD.json"
-UMBRAL_KM = 5
+UMBRAL_KM = float(os.getenv("UMBRAL_KM", "5"))      # distancia de alerta en km
+INTERVALO_S = int(os.getenv("INTERVALO_S", "30"))   # segundos entre consultas
 
 #Descarga de los datos desde la API de Renfe y manejo de errores
 def descargar_datos():
@@ -105,9 +108,12 @@ def imprimir_alertas(alertas):
               f"<-> {b['cod_comercial']} ({b['matricula']})")
 
 if __name__ == "__main__":
-    try:
-        trenes = limpiar_trenes()   # descarga desde la API de Renfe
-        print(f"Trenes válidos: {len(trenes)}\n")
-        imprimir_alertas(trenes_cercanos(trenes))
-    except RuntimeError as e:
-        print(f"Error: {e}")
+    while True:
+        try:
+            trenes = limpiar_trenes()   # descarga desde la API de Renfe
+            print(f"[{datetime.now():%H:%M:%S}] Trenes válidos: {len(trenes)}\n")
+            imprimir_alertas(trenes_cercanos(trenes))
+        except RuntimeError as e:
+            print(f"Error: {e}")   # un fallo de red no detiene el bucle
+        print(flush=True)
+        time.sleep(INTERVALO_S)
